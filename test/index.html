@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>jQuery.fixBorderBox.js</title>
+    <link rel="stylesheet" href="http://code.jquery.com/qunit/qunit-1.10.0.css">
+</head>
+<body>
+    <div id="qunit"></div>
+    <div id="qunit-fixture">
+        <div class="bb" style="box-sizing: border-box; width: 100px; height: 120px; padding: 10px; border: 1px solid black;">Fixture</div>
+    </div>
+    <script src="http://code.jquery.com/qunit/qunit-1.10.0.js"></script>
+    <script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
+    <script src="../jquery.fixBorderBox.js"></script>
+    <script>
+        asyncTest("Test that the erroneous behaviour is in play", function(){
+            var startWidth, endWidth, startHeight, endHeight
+            // On step store fx.start and fx.end
+            var step = function(n, fx) {
+                if (fx.prop == "width" && !startWidth) {
+                    startWidth = fx.start;
+                    endWidth = fx.end;
+                }
+                else if (fx.prop == "height" && !startHeight) {
+                    startHeight = fx.start;
+                    endHeight = fx.end;
+                }
+            };
+            // The bug is that fx.start is width - (padding + margins)
+            var complete = function() {
+                equal(78, startWidth); // Proves bug!
+                equal(88, parseInt($(".bb").css("width"))); // Proves bug!
+                equal(110, endWidth);  // Sanity check for end width
+                equal(98, startHeight); // Proves bug!
+                equal(88, parseInt($(".bb").css("height"))); // Proves bug!
+                equal(110, endHeight);  // Sanity check for end height
+                start();
+            };
+            $(".bb").animate(
+                { width : 110, height: 110 },
+                { step: step, complete: complete }
+            );
+        });
+        asyncTest("Test bbwidth and bbheight fix it", function(){
+            expect(6);
+            var startWidth, endWidth, startHeight, endHeight
+            // On step store fx.start and fx.end
+            var step = function(n, fx) {
+                //console.log(fx);
+                if (fx.prop == "bbwidth" && !startWidth) {
+                    startWidth = fx.start;
+                    endWidth = fx.end;
+                }
+                else if (fx.prop == "bbheight" && !startHeight) {
+                    startHeight = fx.start;
+                    endHeight = fx.end;
+                }
+            };
+            var complete = function() {
+                equal(100, startWidth);
+                equal(110, parseInt($(".bb").css("bbwidth")));
+                equal(110, endWidth);
+                equal(120, startHeight);
+                equal(110, parseInt($(".bb").css("bbheight")));
+                equal(110, endHeight);
+                start();
+            };
+            $(".bb").animate(
+                { bbwidth : 110, bbheight: 110 },
+                { step: step, complete: complete }
+            );
+        });
+    </script>
+</body>
+</html>
